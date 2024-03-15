@@ -54,6 +54,5 @@ if __name__ == "__main__":
     # Calculate compatibility scores
     scored_applicants = calculate_scores(input_data["applicants"], input_data["team"], attribute_weights)
 
-    # Output the results
     output_data = {"scoredApplicants": scored_applicants}
     print(json.dumps(output_data, indent=4))
