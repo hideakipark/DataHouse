@@ -1,0 +1,46 @@
+import json
+import math
+
+def calculate_similarity(applicant, team_member, attribute_weights):
+    weighted_difference = sum((abs(applicant[attr] - team_member[attr]) + max(applicant[attr], team_member[attr])) * attribute_weights[attr] for attr in applicant)
+    return 1 / (1 + weighted_difference)
+
+def normalize_scores(scores):
+    min_score = min(scores)
+    max_score = max(scores)
+    if min_score == max_score:
+        return [0.0] * len(scores)
+    return [(score - min_score) / (max_score - min_score) for score in scores]
+
+def calculate_scores(applicants, team, attribute_weights):
+    scored_applicants = []
+    for applicant in applicants:
+        compatibility_scores = [calculate_similarity(applicant['attributes'], team_member['attributes'], attribute_weights) for team_member in team]
+        normalized_scores = normalize_scores(compatibility_scores)
+        average_score = sum(normalized_scores) / len(normalized_scores)
+        scored_applicants.append({"name": applicant["name"], "score": average_score})
+    return scored_applicants
+
+if __name__ == "__main__":
+    input_data = {
+        "team": [
+            {"name": "Eddie", "attributes": {"intelligence": 1, "strength": 5, "endurance": 3, "spicyFoodTolerance": 1}},
+            {"name": "Will", "attributes": {"intelligence": 9, "strength": 4, "endurance": 1, "spicyFoodTolerance": 6}},
+            {"name": "Mike", "attributes": {"intelligence": 3, "strength": 2, "endurance": 9, "spicyFoodTolerance": 5}}
+        ],
+        "applicants": [
+            {"name": "John", "attributes": {"intelligence": 9, "strength": 5, "endurance": 9, "spicyFoodTolerance": 1}},
+            {"name": "Jane", "attributes": {"intelligence": 7, "strength": 4, "endurance": 3, "spicyFoodTolerance": 2}},
+            {"name": "Joe", "attributes": {"intelligence": 1, "strength": 1, "endurance": 1, "spicyFoodTolerance": 10}}
+        ]
+    }
+
+    # Additional factors
+    attribute_weights = {"intelligence": 1, "strength": 1.5, "endurance": 0.8, "spicyFoodTolerance": 0.5}
+
+    # Calculate compatibility scores
+    scored_applicants = calculate_scores(input_data["applicants"], input_data["team"], attribute_weights)
+
+    # Output the results
+    output_data = {"scoredApplicants": scored_applicants}
+    print(json.dumps(output_data, indent=4))
