@@ -1,9 +1,18 @@
 import json
 import math
 
-def calculate_similarity(applicant, team_member, attribute_weights):
-    weighted_difference = sum((abs(applicant[attr] - team_member[attr]) + max(applicant[attr], team_member[attr])) * attribute_weights[attr] for attr in applicant)
-    return 1 / (1 + weighted_difference)
+
+def calculate_similarity(applicant, team, attribute_weights):
+    total_weighted_difference = 0
+    total_weights = sum(attribute_weights.values())
+
+    for team_member in team:
+        weighted_difference = sum((abs(applicant[attr] - team_member['attributes'][attr]) + max(applicant[attr],team_member['attributes'][attr])) *
+                                  attribute_weights[attr] for attr in applicant)
+        total_weighted_difference += weighted_difference
+
+    return 1 / (1 + total_weighted_difference / total_weights)
+
 
 def normalize_scores(scores):
     min_score = min(scores)
@@ -12,26 +21,30 @@ def normalize_scores(scores):
         return [0.0] * len(scores)
     return [(score - min_score) / (max_score - min_score) for score in scores]
 
+
 def calculate_scores(applicants, team, attribute_weights):
     scored_applicants = []
     for applicant in applicants:
-        compatibility_scores = [calculate_similarity(applicant['attributes'], team_member['attributes'], attribute_weights) for team_member in team]
+        compatibility_scores = [calculate_similarity(applicant['attributes'], [team_member], attribute_weights) for
+                                team_member in team]
         normalized_scores = normalize_scores(compatibility_scores)
         average_score = sum(normalized_scores) / len(normalized_scores)
         scored_applicants.append({"name": applicant["name"], "score": average_score})
     return scored_applicants
 
+
 if __name__ == "__main__":
     input_data = {
         "team": [
-            {"name": "Eddie", "attributes": {"intelligence": 1, "strength": 5, "endurance": 3, "spicyFoodTolerance": 1}},
+            {"name": "Eddie",
+             "attributes": {"intelligence": 1, "strength": 5, "endurance": 3, "spicyFoodTolerance": 1}},
             {"name": "Will", "attributes": {"intelligence": 9, "strength": 4, "endurance": 1, "spicyFoodTolerance": 6}},
             {"name": "Mike", "attributes": {"intelligence": 3, "strength": 2, "endurance": 9, "spicyFoodTolerance": 5}}
         ],
         "applicants": [
-            {"name": "John", "attributes": {"intelligence": 9, "strength": 5, "endurance": 9, "spicyFoodTolerance": 1}},
-            {"name": "Jane", "attributes": {"intelligence": 7, "strength": 4, "endurance": 3, "spicyFoodTolerance": 2}},
-            {"name": "Joe", "attributes": {"intelligence": 1, "strength": 1, "endurance": 1, "spicyFoodTolerance": 10}}
+            {"name": "John", "attributes": {"intelligence": 1, "strength": 5, "endurance": 3, "spicyFoodTolerance": 1}},
+            {"name": "Jane", "attributes": {"intelligence": 9, "strength": 4, "endurance": 1, "spicyFoodTolerance": 6}},
+            {"name": "Joe", "attributes": {"intelligence": 3, "strength": 2, "endurance": 9, "spicyFoodTolerance": 5}}
         ]
     }
 
